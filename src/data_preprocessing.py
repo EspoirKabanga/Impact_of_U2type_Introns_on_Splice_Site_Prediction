@@ -1,6 +1,3 @@
-"""
-Improved data preprocessing module for U2 Intron Splice Site Prediction
-"""
 import numpy as np
 from collections import OrderedDict
 from typing import List, Tuple, Dict, Any
