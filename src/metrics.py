@@ -1,6 +1,3 @@
-"""
-Metrics calculation module for U2 Intron Splice Site Prediction
-"""
 import numpy as np
 from typing import Tuple, Dict, List
 import csv
