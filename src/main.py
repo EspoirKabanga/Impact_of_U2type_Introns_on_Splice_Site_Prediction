@@ -1,6 +1,3 @@
-"""
-Main execution script for U2 Intron Splice Site Prediction
-"""
 import argparse
 import sys
 from pathlib import Path
