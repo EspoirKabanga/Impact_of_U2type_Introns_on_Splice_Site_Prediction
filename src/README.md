@@ -1,259 +1,112 @@
-# U2 Intron Splice Site Prediction - Refactored Code
+# Impact of U2-type Introns on Splice Site Prediction
 
-This directory contains a refactored and improved version of the U2 Intron Splice Site Prediction codebase with better software engineering practices, modularity, and maintainability.
+## Project Overview
 
-## 🚀 Key Improvements
+This project investigates **two key hypotheses about splice site prediction in Arabidopsis thaliana**:
 
-### ✅ **Better Code Organization**
-- **Modular design** with clear separation of concerns
-- **Configuration management** centralized in `config.py`
-- **Factory pattern** for model creation
-- **Class-based architecture** for better encapsulation
+1. **Short introns may enhance prediction effectiveness** due to reduced spatial complexity between donor and acceptor sites
+2. **Sequences with multiple introns provide richer context** for accurate splicing event prediction
 
-### ✅ **Enhanced Error Handling**
-- Comprehensive error handling with try/catch blocks
-- Input validation for sequences and parameters
-- Graceful failure with informative error messages
+## Research Approach
 
-### ✅ **Improved Configuration**
-- All hardcoded values moved to `config.py`
-- Easy to modify parameters without changing code
-- Path management with `pathlib`
-- Environment variable configuration for TensorFlow
+### Data Categories
+- **Intron Length**: Short (<90bp) vs Long (≥90bp) introns
+- **Intron Count**: Single vs Multiple introns per sequence
+- **Mixed Datasets**: Combined categories for comprehensive analysis
 
-### ✅ **Better Logging & Monitoring**
-- Comprehensive logging throughout the pipeline
-- Progress tracking and performance monitoring
-- Detailed metrics reporting
+### Models Tested
+Four state-of-the-art CNN architectures:
+- **IntSplicer**: Multi-layer CNN with progressive filtering
+- **SpliceRover**: Deep architecture with varied kernel sizes  
+- **SpliceFinder**: Lightweight single-layer CNN
+- **DeepSplicer**: Three-layer CNN with consistent filtering
 
-### ✅ **Enhanced Usability**
-- Command-line interface with argument parsing
-- Quick test mode for development
-- Flexible experiment configuration
+### Evaluation
+- **5-fold cross-validation** for robust performance assessment
+- **Comprehensive metrics**: Sensitivity, Precision, F1-score, MCC, Specificity
+- **Statistical analysis** with mean and standard deviation reporting
 
-## 📁 File Structure
+## Key Findings
+
+- **Short introns improved acceptor site prediction** but not donor sites
+- **Multiple introns enhanced prediction for both donor and acceptor sites**
+- Results provide insights into the spatial and contextual factors affecting splice site recognition
+
+## Code Structure
 
 ```
 src/
 ├── __init__.py              # Package initialization
-├── README.md               # This file
-├── config.py               # Configuration management
-├── utils.py                # Utility functions
-├── data_preprocessing.py   # Data loading and preprocessing
-├── models.py               # Neural network model definitions
-├── metrics.py              # Metrics calculation and results
-├── training.py             # Training pipeline and cross-validation
-└── main.py                 # Main execution script
+├── config.py               # Centralized configuration (paths, parameters, sample sizes)
+├── utils.py                # Logging, random seeds, file operations
+├── data_preprocessing.py   # DNA sequence encoding and data loading
+├── models.py               # CNN model architectures (IntSplicer, SpliceRover, etc.)
+├── metrics.py              # Performance metrics calculation and CSV export
+├── training.py             # Cross-validation training pipeline
+└── main.py                 # Command-line interface and experiment execution
 ```
 
-## 📋 Module Overview
+## Installation & Usage
 
-### `config.py`
-- **Purpose**: Centralized configuration management
-- **Features**: 
-  - All parameters in one place
-  - Path management
-  - TensorFlow environment setup
-  - Easy parameter modification
-
-### `utils.py`
-- **Purpose**: Common utility functions
-- **Features**:
-  - Logging setup
-  - Random seed management
-  - File operations with error handling
-  - Data validation functions
-
-### `data_preprocessing.py`
-- **Purpose**: Data loading and preprocessing
-- **Features**:
-  - Robust data loading with validation
-  - One-hot encoding with error checking
-  - Dataset balancing and sampling
-  - Duplicate removal
-
-### `models.py`
-- **Purpose**: Neural network model definitions
-- **Features**:
-  - Abstract base class for models
-  - Factory pattern for model creation
-  - Clean architecture definitions
-  - Consistent compilation settings
-
-### `metrics.py`
-- **Purpose**: Metrics calculation and results management
-- **Features**:
-  - Comprehensive classification metrics
-  - Safe division operations
-  - CSV results export
-  - Performance tracking
-
-### `training.py`
-- **Purpose**: Training pipeline and cross-validation
-- **Features**:
-  - Modular training components
-  - K-fold cross-validation
-  - Callback management
-  - Model artifact saving
-
-### `main.py`
-- **Purpose**: Main execution script
-- **Features**:
-  - Command-line interface
-  - Flexible experiment configuration
-  - Quick test mode
-  - Comprehensive logging
-
-## 🚀 Usage Examples
-
-### Basic Usage
+### Prerequisites
 ```bash
-# Run all experiments (default behavior)
+# Required Python packages
+tensorflow>=2.8.0
+numpy
+scikit-learn
+pandas
+```
+
+### Quick Start
+```bash
+# Quick test run (subset of data and models)
+python -m src.main --quick-test
+
+# Full experiments (all models and data categories)
 python -m src.main
 
-# Quick test with minimal configuration
-python -m src.main --quick-test
-
-# Run specific experiments
-python -m src.main --filetypes donor --models IntSplicer SpliceFinder
-
-# Run with custom parameters
-python -m src.main --epochs 50 --batch-sizes 32 64 --n-folds 10
+# Specific experiments
+python -m src.main --filetypes donor --models IntSplicer SpliceRover
+python -m src.main --data-categories short long --batch-sizes 64
 ```
 
-### Advanced Usage
-```bash
-# Run specific data categories
-python -m src.main --data-categories short long --models DeepSplicer
-
-# Custom output directory
-python -m src.main --output-dir /path/to/results --log-level DEBUG
-
-# Run only acceptor sites with specific models
-python -m src.main --filetypes acceptor --models IntSplicer SpliceRover
-```
-
-### Command Line Options
-```bash
-python -m src.main --help
-```
-
-**Available Options:**
+### Command-Line Options
+- `--quick-test`: Fast test with subset of data/models
 - `--filetypes`: Choose 'donor', 'acceptor', or both
-- `--data-categories`: Select data categories to test
-- `--models`: Choose specific models to train
-- `--batch-sizes`: Specify batch sizes
-- `--epochs`: Number of training epochs
-- `--n-folds`: Number of cross-validation folds
-- `--log-level`: Logging verbosity
-- `--output-dir`: Custom output directory
-- `--quick-test`: Run minimal test
+- `--models`: Select specific models to test
+- `--data-categories`: Choose data categories to analyze
+- `--batch-sizes`: Set batch sizes for training
+- `--epochs`: Number of training epochs (default: 30)
 
-## 🔧 Configuration
+## Configuration
 
-### Modifying Parameters
-Edit `config.py` to change:
-- **Sequence parameters**: Length, input channels
-- **Training parameters**: Epochs, batch sizes, learning rate
-- **Model parameters**: Architecture details
-- **File paths**: Data locations, output directories
+Key parameters in `config.py`:
+- **Sample sizes**: 18,859 (donor) / 19,322 (acceptor) for length-based categories
+- **Sample sizes**: 13,987 (donor) / 14,112 (acceptor) for count-based categories
+- **Sequence length**: 402bp DNA sequences
+- **Encoding**: One-hot encoding (A, C, G, T)
+- **Cross-validation**: 5-fold stratified split
 
-### Example Configuration Changes
-```python
-# In config.py
-class Config:
-    EPOCHS = 50          # Increase training epochs
-    BATCH_SIZES = [32, 64, 128]  # Test multiple batch sizes
-    LEARNING_RATE = 0.0005       # Lower learning rate
-    N_FOLDS = 10         # More cross-validation folds
+## Output
+
+Results are saved as CSV files with format:
+```
+results/yyy_{model}_{category}_{filetype}_{batch_size}.csv
 ```
 
-## 📊 Output Structure
+Each CSV contains:
+- Individual fold performance metrics
+- Average performance across folds
+- Standard deviation statistics
 
+## Data Requirements
+
+Expected data files in project root:
 ```
-results/
-├── yyy_ModelName_DataCategory_FileType_BatchSize.csv  # Individual results
-├── experiment_summary.csv                             # Overall summary
-└── splice_prediction.log                             # Execution log
-
-saved_models/
-├── ModelName_zzz_DataCategory_FileType_BatchSize_fold_N_DataCategory/
-│   ├── ModelName.json                # Model architecture
-│   ├── ModelName.h5                  # Model weights
-│   └── ModelName_history.csv         # Training history
+sorted/arabidopsis_{filetype}_{category}.txt    # Positive sequences
+arabidopsis_{filetype}_negative.txt             # Negative sequences
 ```
 
-## 🎯 Key Benefits
-
-### **For Researchers**
-- **Easy experimentation** with different configurations
-- **Reproducible results** with proper seed management
-- **Comprehensive metrics** for analysis
-- **Flexible parameter tuning**
-
-### **For Developers**
-- **Clean, maintainable code** structure
-- **Proper error handling** and logging
-- **Extensible architecture** for new models
-- **Good software engineering practices**
-
-### **For Users**
-- **Simple command-line interface**
-- **Clear documentation** and examples
-- **Flexible configuration** options
-- **Robust execution** with error recovery
-
-## 🔄 Migration from Original Code
-
-To use the refactored code instead of the original:
-
-1. **Replace the main execution**:
-   ```bash
-   # Instead of: python Main.py
-   python -m src.main
-   ```
-
-2. **Update any custom scripts** to import from the new modules:
-   ```python
-   # Old
-   import mymodels as mdl
-   
-   # New
-   from src.models import ModelFactory
-   model = ModelFactory.create_model('IntSplicer')
-   ```
-
-3. **Use the new configuration system**:
-   ```python
-   # Old
-   filetype = 'donor'
-   
-   # New
-   from src.config import Config
-   config = Config()
-   filetype = config.FILETYPES[0]
-   ```
-
-## 🧪 Testing
-
-```bash
-# Quick functionality test
-python -m src.main --quick-test
-
-# Test specific components
-python -c "from src.models import ModelFactory; print('Models OK')"
-python -c "from src.config import Config; print('Config OK')"
-```
-
-## 🔮 Future Enhancements
-
-The refactored architecture makes it easy to add:
-- **New model architectures** via the factory pattern
-- **Different data preprocessing** methods
-- **Advanced metrics** and visualizations
-- **Hyperparameter optimization**
-- **Distributed training** support
-
----
-
-This refactored codebase maintains all the functionality of the original while providing a much cleaner, more maintainable, and extensible foundation for splice site prediction research. 
+Where:
+- `{filetype}`: 'donor' or 'acceptor'
+- `{category}`: 'short', 'long', 'mix_long_short', 'single', 'multiple', 'mix_single_multiple' 
