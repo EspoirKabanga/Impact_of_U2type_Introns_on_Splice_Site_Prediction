@@ -1,6 +1,3 @@
-"""
-Improved neural network models for U2 Intron Splice Site Prediction
-"""
 import tensorflow as tf
 from typing import Dict, Any
 from abc import ABC, abstractmethod
