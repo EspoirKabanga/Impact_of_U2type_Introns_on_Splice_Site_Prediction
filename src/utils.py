@@ -1,6 +1,3 @@
-"""
-Utility functions for U2 Intron Splice Site Prediction
-"""
 import random
 import numpy as np
 import tensorflow as tf
