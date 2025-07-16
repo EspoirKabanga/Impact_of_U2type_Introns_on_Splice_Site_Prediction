@@ -1,6 +1,3 @@
-"""
-Training module for U2 Intron Splice Site Prediction
-"""
 import tensorflow as tf
 from tensorflow import keras
 import numpy as np
