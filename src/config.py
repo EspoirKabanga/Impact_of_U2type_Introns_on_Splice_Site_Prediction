@@ -1,6 +1,3 @@
-"""
-Configuration settings for U2 Intron Splice Site Prediction
-"""
 from pathlib import Path
 from typing import List, Dict, Any
 import os
