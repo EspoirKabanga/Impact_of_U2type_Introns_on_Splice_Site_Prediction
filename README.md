@@ -99,6 +99,32 @@ Each CSV contains:
 - Average performance across folds
 - Standard deviation statistics
 
+## Reproducibility
+
+- Pinned environment (install exact versions):
+  - tensorflow==2.10.1
+  - numpy==1.23.5
+  - scikit-learn==1.2.2
+  - pandas==1.5.3
+  - matplotlib==3.7.1
+  - statsmodels==0.13.5
+  - scipy==1.10.1
+
+- Random seeds and determinism:
+  - Seed constant: `Config.RANDOM_SEED = 42` (see `src/config.py`).
+  - Seeds applied via `utils.set_random_seeds(42)` in `main.setup_environment`.
+  - Cross-validation uses `StratifiedKFold(..., random_state=42)`; train/test split uses `train_test_split(..., random_state=42, stratify=y)`.
+
+- Train/val/test split:
+  - Single 80:20 stratified split with seed 42 (see `src/training.py`).
+  - Validation is taken from training via `validation_split=0.1` where applicable.
+
+- Pretrained weights / saved models:
+  - Best weights: `best_weights/` (per fold, latest `.h5`).
+  - Full models + history: `saved_models/`.
+  - To evaluate external pretrained models on the exact 80:20 test split (seed=42), use:
+    - `python src/evaluate_test.py --models-dir /path/to/saved_models`
+
 ## Data Requirements
 
 Expected data files in project root:
