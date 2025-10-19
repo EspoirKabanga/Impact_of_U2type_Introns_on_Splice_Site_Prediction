@@ -2,7 +2,7 @@ import tensorflow as tf
 from typing import Dict, Any
 from abc import ABC, abstractmethod
 
-from .config import Config
+from config import Config
 
 class BaseModel(ABC):
     """Abstract base class for splice site prediction models"""

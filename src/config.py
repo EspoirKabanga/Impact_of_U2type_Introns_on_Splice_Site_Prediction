@@ -7,8 +7,9 @@ class Config:
     
     # Project paths
     PROJECT_ROOT = Path(__file__).parent.parent
+    SRC_DIR = Path(__file__).parent
     DATA_DIR = PROJECT_ROOT / "data"
-    SORTED_DIR = PROJECT_ROOT / "sorted"
+    SORTED_DIR = SRC_DIR / "sorted"
     RESULTS_DIR = PROJECT_ROOT / "results"
     SAVED_MODELS_DIR = PROJECT_ROOT / "saved_models"
     WEIGHTS_DIR = PROJECT_ROOT / "best_weights"
@@ -25,6 +26,9 @@ class Config:
     BATCH_SIZES = [64]  # Can extend to [32, 64, 128, 256] for experiments
     LEARNING_RATE = 0.001
     RANDOM_SEED = 42
+    
+    # Data loading parameters
+    USE_ALL_NEGATIVES = True  # When True, do not sample negatives; use all available
     
     # Model parameters
     PATIENCE = 5  # Early stopping patience
@@ -64,7 +68,7 @@ class Config:
     METRICS_COLUMNS = [
         'Fold', 'Sensitivity', 'Precision', 'F1-score', 
         'False Positive Rate', 'False Discovery Rate', 
-        'Specificity', 'Recall', 'MCC'
+        'Specificity', 'Recall', 'MCC', 'AUROC', 'AUPRC'
     ]
     
     @classmethod
@@ -89,7 +93,7 @@ class Config:
     @classmethod
     def get_negative_file_path(cls, filetype: str) -> Path:
         """Get path to negative data file"""
-        return cls.PROJECT_ROOT / f"arabidopsis_{filetype}_negative.txt"
+        return cls.SRC_DIR / f"arabidopsis_{filetype}_negative.txt"
     
     @classmethod
     def get_results_file_path(cls, model_name: str, data_category: str, 

@@ -4,8 +4,9 @@ import csv
 from pathlib import Path
 import logging
 
-from .config import Config
-from .utils import safe_divide
+from config import Config
+from utils import safe_divide
+from sklearn.metrics import roc_auc_score, average_precision_score
 
 logger = logging.getLogger(__name__)
 
@@ -71,14 +72,29 @@ class MetricsCalculator:
         mcc_denominator = np.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn))
         mcc = safe_divide((tp * tn) - (fp * fn), mcc_denominator)
         
-        return (recall, precision, f1, fpr, fdr, specificity, sensitivity, mcc)
+        # AUROC and AUPRC using positive-class probabilities
+        try:
+            y_true = labels[:, 1].astype(int)
+            y_scores = predictions[:, 1]
+            auroc = float(roc_auc_score(y_true, y_scores))
+        except Exception:
+            auroc = float('nan')
+        
+        try:
+            y_true = labels[:, 1].astype(int)
+            y_scores = predictions[:, 1]
+            auprc = float(average_precision_score(y_true, y_scores))
+        except Exception:
+            auprc = float('nan')
+        
+        return (recall, precision, f1, fpr, fdr, specificity, sensitivity, mcc, auroc, auprc)
     
     def get_metrics_dict(self, predictions: np.ndarray, 
                         labels: np.ndarray) -> Dict[str, float]:
         """Get metrics as a dictionary"""
         metrics = self.calculate_metrics(predictions, labels)
         metric_names = ['recall', 'precision', 'f1', 'fpr', 'fdr', 
-                       'specificity', 'sensitivity', 'mcc']
+                       'specificity', 'sensitivity', 'mcc', 'auroc', 'auprc']
         return dict(zip(metric_names, metrics))
 
 class ResultsManager:
@@ -159,7 +175,7 @@ class ResultsManager:
     def log_metrics_summary(self, model_name: str, data_category: str, 
                            avg_metrics: np.ndarray, std_metrics: np.ndarray) -> None:
         """Log metrics summary"""
-        metric_names = ['Recall', 'Precision', 'F1', 'FPR', 'FDR', 'Specificity', 'Sensitivity', 'MCC']
+        metric_names = ['Recall', 'Precision', 'F1', 'FPR', 'FDR', 'Specificity', 'Sensitivity', 'MCC', 'AUROC', 'AUPRC']
         
         logger.info(f"\n=== {model_name} - {data_category} Summary ===")
         for name, avg, std in zip(metric_names, avg_metrics, std_metrics):
@@ -178,25 +194,46 @@ class ResultsManager:
             with open(output_file, 'w', newline='') as csvfile:
                 csv_writer = csv.writer(csvfile)
                 
-                # Write header
-                header = ['Model', 'Data_Category', 'Batch_Size'] + [
-                    f'{metric}_{stat}' 
-                    for metric in ['Recall', 'Precision', 'F1', 'Specificity', 'MCC']
-                    for stat in ['Mean', 'Std']
+                # Write header including AUROC/AUPRC with 95% CI
+                header = [
+                    'Model', 'Data_Category', 'Batch_Size',
+                    'Recall_Mean', 'Recall_Std',
+                    'Precision_Mean', 'Precision_Std',
+                    'F1_Mean', 'F1_Std',
+                    'Specificity_Mean', 'Specificity_Std',
+                    'MCC_Mean', 'MCC_Std',
+                    'AUROC_Mean', 'AUROC_Std', 'AUROC_CI95_Low', 'AUROC_CI95_High',
+                    'AUPRC_Mean', 'AUPRC_Std', 'AUPRC_CI95_Low', 'AUPRC_CI95_High'
                 ]
                 csv_writer.writerow(header)
+                
+                n_folds = self.config.N_FOLDS
+                z = 1.96
                 
                 # Write results
                 for model_name, model_results in results.items():
                     for data_cat, metrics in model_results.items():
                         row = [model_name, data_cat, metrics.get('batch_size', 64)]
                         
-                        # Add key metrics with mean and std
-                        key_indices = [0, 1, 2, 5, 7]  # recall, precision, f1, specificity, mcc
-                        for idx in key_indices:
+                        avg = metrics['avg']
+                        std = metrics['std']
+                        
+                        # Existing key metrics: recall(0), precision(1), f1(2), specificity(5), mcc(7)
+                        for idx in [0, 1, 2, 5, 7]:
                             row.extend([
-                                f"{metrics['avg'][idx]:.4f}",
-                                f"{metrics['std'][idx]:.4f}"
+                                f"{avg[idx]:.4f}",
+                                f"{std[idx]:.4f}"
+                            ])
+                        
+                        # AUROC (index 8) and AUPRC (index 9) with 95% CI
+                        for idx in [8, 9]:
+                            mean_v = avg[idx]
+                            std_v = std[idx]
+                            se_v = std_v / np.sqrt(n_folds)
+                            ci_low = mean_v - z * se_v
+                            ci_high = mean_v + z * se_v
+                            row.extend([
+                                f"{mean_v:.4f}", f"{std_v:.4f}", f"{ci_low:.4f}", f"{ci_high:.4f}"
                             ])
                         
                         csv_writer.writerow(row)

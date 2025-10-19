@@ -5,8 +5,8 @@ import random
 import logging
 from pathlib import Path
 
-from .config import Config
-from .utils import (
+from config import Config
+from utils import (
     read_sequences_from_file, 
     validate_sequence_length, 
     validate_dna_sequences,
@@ -103,11 +103,12 @@ class DNASequenceProcessor:
             positive_sequences = random.sample(positive_sequences, sample_size)
             logger.info(f"Sampled {sample_size} positive sequences")
         
-        # Sample negative sequences based on balance ratio
-        neg_sample_size = int(len(positive_sequences) * balance_ratio)
-        if neg_sample_size < len(negative_sequences):
-            negative_sequences = random.sample(negative_sequences, neg_sample_size)
-            logger.info(f"Sampled {neg_sample_size} negative sequences (ratio: {balance_ratio})")
+        # Optionally sample negative sequences based on balance ratio
+        if not self.config.USE_ALL_NEGATIVES:
+            neg_sample_size = int(len(positive_sequences) * balance_ratio)
+            if neg_sample_size < len(negative_sequences):
+                negative_sequences = random.sample(negative_sequences, neg_sample_size)
+                logger.info(f"Sampled {neg_sample_size} negative sequences (ratio: {balance_ratio})")
         
         # Log dataset statistics
         stats = calculate_dataset_stats(positive_sequences, negative_sequences)

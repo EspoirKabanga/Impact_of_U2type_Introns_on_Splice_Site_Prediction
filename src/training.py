@@ -8,14 +8,14 @@ import glob
 import os
 from sklearn.model_selection import StratifiedKFold
 
-from .config import Config
-from .utils import (
+from config import Config
+from utils import (
     create_directory_safe, 
     remove_directory_safe, 
     get_model_project_name
 )
-from .metrics import MetricsCalculator, PerformanceTracker
-from .models import BaseModel
+from metrics import MetricsCalculator, PerformanceTracker
+from models import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -63,15 +63,15 @@ class ModelCallbacks:
         )
         
         # Learning rate reduction callback
-        reduce_lr = keras.callbacks.ReduceLROnPlateau(
-            monitor=self.config.MONITOR_METRIC,
-            factor=0.5,
-            patience=3,
-            min_lr=1e-7,
-            verbose=1
-        )
+        # reduce_lr = keras.callbacks.ReduceLROnPlateau(
+        #     monitor=self.config.MONITOR_METRIC,
+        #     factor=0.5,
+        #     patience=3,
+        #     min_lr=1e-7,
+        #     verbose=1
+        # )
         
-        return [model_checkpoint, early_stopping, reduce_lr]
+        return [model_checkpoint, early_stopping]
 
 class ModelManager:
     """Class for managing model saving and loading"""
@@ -252,7 +252,7 @@ class CrossValidationTrainer:
                 )
                 
                 # Prepare fold data
-                from .data_preprocessing import DataLoader
+                from data_preprocessing import DataLoader
                 data_loader = DataLoader(self.config)
                 
                 train_data = data_loader.prepare_training_data(X, y, (train_idx, val_idx))
@@ -330,7 +330,7 @@ class ExperimentRunner:
         logger.info(f"{'='*60}")
         
         # Load data
-        from .data_preprocessing import DataLoader
+        from data_preprocessing import DataLoader
         data_loader = DataLoader(self.config)
         
         X, y = data_loader.load_dataset(filetype, data_category)
@@ -351,7 +351,7 @@ class ExperimentRunner:
         )
         
         # Calculate summary statistics
-        from .metrics import ResultsManager
+        from metrics import ResultsManager
         results_manager = ResultsManager(self.config)
         avg_metrics, std_metrics = results_manager.calculate_fold_summary(fold_metrics_list)
         
